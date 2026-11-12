@@ -1,3 +1,4 @@
+<#
 BeforeDiscovery {
     Set-Location -Path $PSScriptRoot
     $ModuleName = 'XDRHelper'
@@ -58,3 +59,4 @@ InModuleScope 'XDRHelper' {
     } #describe_Get-HelloWorld
 } #inModule
 
+#>
