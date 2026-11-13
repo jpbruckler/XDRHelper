@@ -16,9 +16,12 @@ BeforeDiscovery {
 }
 
 InModuleScope 'XDRHelper' {
-
+    BeforeAll {
+        $Now = [datetime]::new(2026, 11, 12, 18, 0, 0, [DateTimeKind]::Utc)
+    }
     Describe 'Connect-XdrByAppId public function tests' -Tag Unit {
         BeforeAll {
+            Mock -ModuleName XDRHelper Get-Date { $Now } -ParameterFilter { $AsUTC }
             $AppId = '11111111-1111-1111-1111-111111111111'
             $TenantId = '22222222-2222-2222-2222-222222222222'
             $AppSecret = ConvertTo-SecureString 'FakeSecret' -AsPlainText -Force
@@ -75,9 +78,17 @@ InModuleScope 'XDRHelper' {
                     Should -Not -BeNullOrEmpty
 
                     $Script:XdrAuthContext.Expires |
-                    Should -BeGreaterThan (Get-Date)
+                    Should -BeGreaterThan (Get-Date -AsUTC)
                 }
             }
+
+            It 'stores an expiry based on expires_in' {
+                Connect-XdrByAppID `
+                    -AppId $AppId `
+                    -AppSecret $AppSecret `
+                    -TenantId $TenantId
+                InModuleScope XDRHelper { $script:XdrAuthContext.Expires } | Should -Be $Now.AddSeconds(3599)
+                InModuleScope XDRHelper { $script:XdrAuthHeader.Authorization } | Should -Be 'Bearer FakeAccessToken'            }
         }
 
         Context 'When authentication fails' {

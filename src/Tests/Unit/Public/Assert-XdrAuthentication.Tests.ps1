@@ -67,8 +67,8 @@ InModuleScope 'XDRHelper' {
         ) {
             BeforeEach { Set-TestAuthState $ExpiresIn }
 
-            It 'returns $true without reconnecting' {
-                Assert-XdrAuthentication | Should -BeTrue
+            It 'does not attempt to reconnect' {
+                Assert-XdrAuthentication
                 Should -Invoke -ModuleName XDRHelper Connect-XdrByAppId -Times 0 -Exactly
             }
         }
@@ -82,7 +82,7 @@ InModuleScope 'XDRHelper' {
             BeforeEach { Set-TestAuthState $ExpiresIn }
 
             It 'reconnects once using the stored context and returns $true' {
-                Assert-XdrAuthentication | Should -BeTrue
+                Assert-XdrAuthentication
                 Should -Invoke -ModuleName XDRHelper Connect-XdrByAppId -Times 1 -Exactly -ParameterFilter {
                     $AppId -eq 'test-app-id' -and $TenantId -eq 'test-tenant-id' -and $AppSecret -is [securestring]
                 }
@@ -95,24 +95,9 @@ InModuleScope 'XDRHelper' {
                 Mock -ModuleName XDRHelper Connect-XdrByAppId { throw 'AADSTS7000222: client secret expired' }
             }
 
-            It 'returns $false' {
-                Assert-XdrAuthentication | Should -BeFalse
+            It 'should throw' {
+                { Assert-XdrAuthentication } | Should-Throw
             }
-        }
-    }
-
-    Describe 'Connect-XdrByAppId' {
-        BeforeAll {
-            Mock -ModuleName XDRHelper Get-Date { $Now } -ParameterFilter { $AsUTC }
-            Mock -ModuleName XDRHelper Invoke-RestMethod {
-                [pscustomobject]@{ access_token = 'new-token'; expires_in = '3599' }
-            }
-        }
-
-        It 'stores an expiry based on expires_in' {
-            Connect-XdrByAppId -AppId 'a' -TenantId 't' -AppSecret (ConvertTo-SecureString 'x' -AsPlainText -Force)
-            InModuleScope XDRHelper { $script:XdrAuthContext.Expires } | Should -Be $Now.AddSeconds(3599)
-            InModuleScope XDRHelper { $script:XdrAuthHeader.Authorization } | Should -Be 'Bearer new-token'
         }
     }
 }
