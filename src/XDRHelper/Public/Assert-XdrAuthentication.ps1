@@ -36,9 +36,8 @@ function Assert-XdrAuthentication {
                 -AppSecret $Script:XdrAuthContext.AppSecret `
                 -TenantId $Script:XdrAuthContext.TenantId
         }
-        return $true
     }
     catch {
-        return $false
+        throw "Unable to renew Defender authentication token. $_"
     }
 }
