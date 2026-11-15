@@ -33,7 +33,7 @@ Copyright = '(c) John Bruckler. All rights reserved.'
 Description = 'Set of helper functions to streamline working with the Defender XDR API'
 
 # Minimum version of the PowerShell engine required by this module
-PowerShellVersion = '7.0'
+PowerShellVersion = '7.4'
 
 # Name of the PowerShell host required by this module
 # PowerShellHostName = ''
