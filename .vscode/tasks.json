@@ -49,7 +49,7 @@
     "osx": {
         "options": {
             "shell": {
-                "executable": "/usr/local/bin/pwsh",
+                "executable": "/opt/homebrew/bin/pwsh",
                 "args": [
                     "-NoProfile",
                     "-Command"
@@ -257,6 +257,17 @@
                 "showReuseMessage": false
             },
             "group": "test"
+        },
+        {
+            "label": "New-UnitTest",
+            "type": "shell",
+            "command": "Invoke-Build -Task UnitTest -File '${workspaceFolder}/src/${workspaceFolderBasename}.build.ps1' -FunctionName '${input:functionName}' -FunctionType '${input:functionType}'",
+            "problemMatcher": [],
+            "presentation": {
+                "echo": false,
+                "showReuseMessage": false
+            },
+            "group": "none"
         }
     ],
     "inputs": [
@@ -264,6 +275,16 @@
             "type": "promptString",
             "id": "functionName",
             "description": "Name of PowerShell function you want to test"
+        },
+        {
+            "type": "pickString",
+            "id": "functionType",
+            "description": "Public or Private function?",
+            "options": [
+                "Public",
+                "Private"
+            ],
+            "default": "Public"
         }
     ]
 }
