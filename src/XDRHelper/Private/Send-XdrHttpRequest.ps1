@@ -5,7 +5,8 @@ function Send-XdrHttpRequest {
         [Parameter(Mandatory)][string]$Method,
         [Parameter(Mandatory)][uri]$Uri,
         [Parameter(Mandatory)][hashtable]$Headers,
-        [string]$Body
+        [string]$Body,
+        [int] $TimeoutSecs = 20
     )
 
     $params = @{
@@ -19,7 +20,7 @@ function Send-XdrHttpRequest {
     }
     if ($Body) { $params.Body = $Body }
 
-    $content = Invoke-RestMethod @params
+    $content = Invoke-RestMethod @params -TimeoutSec $TimeoutSecs
 
     [pscustomobject]@{
         StatusCode = [int]$statusCode

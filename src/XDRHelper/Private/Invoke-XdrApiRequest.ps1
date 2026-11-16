@@ -18,13 +18,17 @@
         [int]$MaxRetryAfterSeconds = 120  # beyond this, throw rather than silently sleep
     )
 
-    $uri  = New-XdrApiUri -Path $Path -Query $Query
+    $uri = New-XdrApiUri -Path $Path -Query $Query
+
+    # don't allow retries on non-idempotent methods
+    $retrySafe = $Method -eq 'GET'
+
     # Body params are case-sensitive on the API side; ConvertTo-Json preserves key case.
-    $json = if ($PSBoundParameters.ContainsKey('Body')) { $Body | ConvertTo-Json -Depth 10 -Compress }
+    $json = if ($PSBoundParameters.ContainsKey('Body')) { ConvertTo-Json -InputObject $Body -Depth 10 -Compress }
 
     do {
         # ---- one logical request, with retries ----
-        $attempt  = 0
+        $attempt = 0
         $reauthed = $false
         while ($true) {
             $attempt++
@@ -37,8 +41,9 @@
                 $response = Send-XdrHttpRequest -Method $Method -Uri $uri -Headers $Script:XdrAuthHeader -Body $json
             }
             catch {
-                # Transport failure: no status code. Retry with backoff.
-                if ($attempt -gt $MaxRetries) { throw }
+                # Transport failure: no status code. Retry with backoff, but only where
+                # re-sending is safe and retries remain.
+                if (-not $retrySafe -or $attempt -gt $MaxRetries) { throw }
                 $delay = Get-XdrRetryDelay -Response $null -Attempt $attempt
                 Write-Verbose "Transport error on $Method $uri ($($_.Exception.Message)); retrying in $([int]$delay)s."
                 Start-Sleep -Seconds $delay
@@ -56,7 +61,7 @@
                 continue
             }
 
-            if (($status -eq 429 -or $status -ge 500) -and $attempt -le $MaxRetries) {
+            if (($status -eq 429 -or ($status -ge 500 -and $retrySafe)) -and $attempt -le $MaxRetries) {
                 $delay = Get-XdrRetryDelay -Response $response -Attempt $attempt
                 if ($delay -le $MaxRetryAfterSeconds) {
                     Write-Verbose "HTTP $status on $Method $uri; retrying in $([int]$delay)s (attempt $attempt/$MaxRetries)."
@@ -71,11 +76,18 @@
         }
 
         # ---- shape the output ----
-        $content      = $response.Content
-        $isCollection = $content -and $content.PSObject.Properties.Name -contains 'value'
+        $content = $response.Content
+        $isCollection = $content -and
+            $content.PSObject.Properties.Name -contains 'value' -and
+            $content.value -is [array]
 
-        if ($Raw -or -not $isCollection) { $content }
-        else                             { $content.value }   # unrolls items onto the pipeline
+        # handle situations where the response is empty, like http 204. Instead
+        # of emitting $null, return silently.
+        $hasBody = $null -ne $content -and -not ($content -is [string] -and $content.Length -eq 0)
+        if ($hasBody) {
+            if ($Raw -or -not $isCollection) { $content }
+            else { $content.value }
+        }
 
         # nextLink is absolute and already carries the query string; use it as-is.
         $uri = if ($isCollection -and -not $NoPaging) { $content.'@odata.nextLink' }

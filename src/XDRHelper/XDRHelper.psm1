@@ -3,8 +3,6 @@
 # dot source the parent import for local development variables
 . $PSScriptRoot\Imports.ps1
 
-$Script:XdrApiBaseUri = 'https://api.security.microsoft.com/api'
-
 # discover all ps1 file(s) in Public and Private paths
 
 $itemSplat = @{

@@ -72,6 +72,7 @@ PowerShellVersion = '7.4'
 FunctionsToExport = @(
     'Assert-XdrAuthentication',
     'Connect-XdrByAppId',
+    'Disconnect-Xdr',
     'Get-XdrDevice'
 )
 
