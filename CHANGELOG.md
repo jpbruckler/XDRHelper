@@ -4,6 +4,18 @@
 
 - **XDRHelper.psd1**: remove internal references
 
+## v0.1.1 (2026-11-16)
+
+### Fix
+
+- **XDRHelper.psd1**: remove internal references
+
+## v0.1.1 (2026-11-16)
+
+### Fix
+
+- **XDRHelper.psd1**: remove internal references
+
 ## v0.1.0 (2026-11-16)
 
 ### Feat

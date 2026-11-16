@@ -2,7 +2,7 @@
 Module Name: XDRHelper
 Module Guid: 80ccbece-9238-4643-8414-9646af6bdfb2
 Download Help Link: NA
-Help Version: 0.1.0
+Help Version: 0.1.1
 Locale: en-US
 ---
 
