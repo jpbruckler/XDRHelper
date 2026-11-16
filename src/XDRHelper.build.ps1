@@ -36,6 +36,12 @@
             GitHub Actions - actions_bootstrap.ps1
             AppVeyor  - actions_bootstrap.ps1
 #>
+param(
+    [string] $FunctionName,
+
+    [ValidateSet('Public', 'Private')]
+    [string] $FunctionType
+)
 
 #Include: Settings
 $ModuleName = [regex]::Match((Get-Item $BuildFile).Name, '^(.*)\.build\.ps1$').Groups[1].Value
@@ -623,3 +629,45 @@ Add-BuildTask Archive {
     Write-Build Green '        ...Archive Complete!'
 } #Archive
 
+#Synopsis generate a scaffold unit test file given a function name and function type (Public, Private)
+Add-BuildTask UnitTest {
+    Write-Build White "        Creating Unit test file for $FunctionName..."
+
+    assert ($FunctionName) 'FunctionName is required.'
+    assert ($FunctionType) 'FunctionType is required (Public or Private).'
+
+    $sourceFile = Join-Path $script:ModuleSourcePath "$FunctionType/$FunctionName.ps1"
+    assert (Test-Path $sourceFile) "No $FunctionType function found at $sourceFile. Check the name and type."
+
+
+    $directory = (Join-Path $script:UnitTestsPath $FunctionType)
+    $filename  = "$FunctionName.Tests.ps1"
+    $testFile  = (Join-Path $directory $filename)
+
+    $testBody = @'
+BeforeDiscovery {
+    Set-Location -Path $PSScriptRoot
+    $ModuleName = '__MODULE_NAME__'
+    $PathToManifest = [System.IO.Path]::Combine('..', '..', '..', $ModuleName, "$ModuleName.psd1")
+    #if the module is already in memory, remove it
+    Get-Module $ModuleName -ErrorAction SilentlyContinue | Remove-Module -Force
+    Import-Module $PathToManifest -Force
+}
+
+InModuleScope '__MODULE_NAME__' {
+    Describe '__FUNCTION_NAME__ __FUNCTION_TYPE__ function tests' {
+
+    }
+}
+'@
+    $output = $testBody
+    $output = $output -replace '__MODULE_NAME__', $script:ModuleName
+    $output = $output -replace '__FUNCTION_NAME__', $FunctionName
+    $output = $output -replace '__FUNCTION_TYPE__', $FunctionType
+
+    Write-Build Gray "        Writing test scaffold to $testFile..."
+
+    $output | Out-File $testFile -Encoding utf8BOM -NoClobber
+
+    Write-Build Green '        ...Unit test Complete!'
+}
