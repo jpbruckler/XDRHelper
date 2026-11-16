@@ -23,13 +23,13 @@ function Connect-XdrByAppId {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]
-        [string]$AppId,
+        [guid] $AppId,
 
         [Parameter(Mandatory)]
         [securestring]$AppSecret,
 
         [Parameter(Mandatory)]
-        [string]$TenantId
+        [guid] $TenantId
     )
 
     $sourceAppIdUri = 'https://api.securitycenter.microsoft.com'
@@ -66,6 +66,6 @@ function Connect-XdrByAppId {
         Write-Verbose "Connected to Defender XDR. Token expires at $($Script:XdrAuthContext.Expires.ToString('u'))"
     }
     catch {
-        throw "Failed to authenticate to Defender XDR: $($_.Exception.Message)"
+        throw "Failed to authenticate to Defender XDR: AADSTS: $($_.ErrorDetails.Message.error_description) HTTP: $($_.Exception.Message)"
     }
 }
