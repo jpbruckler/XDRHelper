@@ -35,7 +35,7 @@ function Assert-XdrAuthentication {
         if ($Script:XdrAuthContext.Expires -le (Get-Date -AsUTC).AddMinutes(5)) {
             Write-Verbose 'XDR authentication token is expired or approaching expiration. Renewing token.'
 
-            Connect-XdrByAppID `
+            Connect-XdrByAppId `
                 -AppId $Script:XdrAuthContext.AppId `
                 -AppSecret $Script:XdrAuthContext.AppSecret `
                 -TenantId $Script:XdrAuthContext.TenantId
