@@ -4,7 +4,7 @@ param()
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
-$ManifestPath = Join-Path $PSScriptRoot 'src' 'XDRHelper' 'XDRHelper.psd1'
+$ManifestPath = Join-Path $PSScriptRoot '..' 'src' 'XDRHelper' 'XDRHelper.psd1'
 $Version = $env:CZ_PRE_NEW_VERSION
 
 if ([string]::IsNullOrWhiteSpace($Version)) {
