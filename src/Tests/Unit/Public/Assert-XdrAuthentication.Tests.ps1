@@ -26,9 +26,9 @@ InModuleScope 'XDRHelper' {
             InModuleScope XDRHelper -Parameters @{ Expires = $Now + $ExpiresIn } {
                 $script:XdrAuthHeader = @{ Authorization = 'Bearer fake-token' }
                 $script:XdrAuthContext = @{
-                    AppId     = 'test-app-id'
+                    AppId     = '11111111-1111-1111-1111-111111111111'
                     AppSecret = ConvertTo-SecureString 'x' -AsPlainText -Force
-                    TenantId  = 'test-tenant-id'
+                    TenantId  = '22222222-2222-2222-2222-222222222222'
                     Expires   = $Expires
                 }
             }
@@ -84,7 +84,7 @@ InModuleScope 'XDRHelper' {
             It 'reconnects once using the stored context and returns $true' {
                 Assert-XdrAuthentication
                 Should -Invoke -ModuleName XDRHelper Connect-XdrByAppId -Times 1 -Exactly -ParameterFilter {
-                    $AppId -eq 'test-app-id' -and $TenantId -eq 'test-tenant-id' -and $AppSecret -is [securestring]
+                    $AppId -eq '11111111-1111-1111-1111-111111111111' -and $TenantId -eq '22222222-2222-2222-2222-222222222222' -and $AppSecret -is [securestring]
                 }
             }
         }
