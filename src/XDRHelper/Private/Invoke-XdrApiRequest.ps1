@@ -78,8 +78,8 @@
         # ---- shape the output ----
         $content = $response.Content
         $isCollection = $content -and
-            $content.PSObject.Properties.Name -contains 'value' -and
-            $content.value -is [array]
+        $content.PSObject.Properties.Name -contains 'value' -and
+        $content.value -is [array]
 
         # handle situations where the response is empty, like http 204. Instead
         # of emitting $null, return silently.
