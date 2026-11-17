@@ -82,6 +82,7 @@ function Add-XdrDeviceTag {
     }
 
     end {
+        # the batch size of 500 is managed in Invoke-XdrDeviceTagRequest
         if ($deviceIds.Count -eq 0) { return }
 
         $target = if ($deviceIds.Count -eq 1) { "device $($deviceIds[0])" } else { "$($deviceIds.Count) devices" }
