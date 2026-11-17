@@ -655,8 +655,43 @@ BeforeDiscovery {
 }
 
 InModuleScope '__MODULE_NAME__' {
-    Describe '__FUNCTION_NAME__ __FUNCTION_TYPE__ function tests' {
+    Describe '__FUNCTION_NAME__ __FUNCTION_TYPE__ function tests' -Tag Unit {
+        # Each skipped test below is a question to answer about __FUNCTION_NAME__.
+        # Replace the name with what should happen, write the body, and remove -Skip.
+        # Copy a line for each separate answer; delete the ones that do not apply.
+        #
+        # Once a test passes, break the function on purpose (change a path, delete a
+        # check). If no test goes red, something is still uncovered.
 
+        BeforeEach {
+            # Mock what the function calls, so no test reaches the real API. For example:
+            # Mock Assert-XdrAuthentication { }
+            # Mock Invoke-XdrApiRequest { }
+        }
+
+        Context 'what it sends' {
+            It 'TODO: calls the right thing with the right method, path and body' -Skip { }
+        }
+
+        Context 'what it gives back' {
+            It 'TODO: returns the expected output (or nothing) for normal input' -Skip { }
+        }
+
+        Context 'what input it refuses' {
+            It 'TODO: rejects missing, empty, malformed or out-of-range input' -Skip { }
+        }
+
+        Context 'when the thing it calls fails' {
+            It 'TODO: reports or stops as intended for each kind of failure' -Skip { }
+        }
+
+        Context 'what it must never do' {
+            It 'TODO: makes no changes with -WhatIf, and does not treat empty input as everything' -Skip { }
+        }
+
+        Context 'zero, one, many and duplicates' {
+            It 'TODO: behaves correctly for no items, one item, several items and repeated items' -Skip { }
+        }
     }
 }
 '@

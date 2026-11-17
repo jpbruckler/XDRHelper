@@ -6,7 +6,7 @@ function Set-XdrDeviceValue {
         Sets device value to Low, Normal, or High for devices in Microsoft
         Defender for Endpoint.
 
-        Device IDs can be supplied directly or from the pipeline, include the
+        Device IDs can be supplied directly or from the pipeline, including the
         output of Get-XdrDevice.
 
         A device ID that does not exist in Defender is reported as a
@@ -22,7 +22,7 @@ function Set-XdrDeviceValue {
         The device value to set. Must be one of: High, Normal, Low
     .PARAMETER PassThru
         Returns the updated device objects. Each device is returned once,
-        reflecting its state after the last tag was processed. By default
+        reflecting its state after the device value was changed. By default
         nothing is returned.
     .EXAMPLE
         Set-XdrDeviceValue -Id caab196872d62e639a7b7cdf8593601cf632b4eb -DeviceValue High
@@ -63,16 +63,25 @@ function Set-XdrDeviceValue {
 
     begin {
         Assert-XdrAuthentication
+
+        enum ValueEnum {
+            High
+            Normal
+            Low
+        }
     }
 
     process {
         foreach ($device in $Id) {
+            $DeviceValue = [ValueEnum]::$DeviceValue
+            if (-not $PSCmdlet.ShouldProcess($device, "Set value '$DeviceValue'")) { continue }
+
             $path = "machines/$device/setDeviceValue"
             $body = @{
                 DeviceValue = $DeviceValue
             }
 
-            if (-not $PSCmdlet.ShouldProcess($id, "Set value '$DeviceValue'")) { continue }
+            if (-not $PSCmdlet.ShouldProcess($device, "Set value '$DeviceValue'")) { continue }
             try {
                 $result = Invoke-XdrApiRequest -Method 'POST' -Path $path -Body $body
 
