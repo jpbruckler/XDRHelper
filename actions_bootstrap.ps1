@@ -14,7 +14,7 @@ Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
 #   MinimumVersion/MaximumVersion = a version range; RequiredVersion = an exact pin.
 $modulesToInstall = @(
     # https://github.com/pester/Pester  (build file requires 6.x)
-    @{ Name = 'Pester';           MinimumVersion = '6.0.0'; MaximumVersion = '6.99.99' }
+    @{ Name = 'Pester';           MinimumVersion = '6.2.0'; MaximumVersion = '6.99.99' }
     # https://github.com/nightroman/Invoke-Build
     @{ Name = 'InvokeBuild';      MinimumVersion = '5.0.0' }
     # https://github.com/PowerShell/PSScriptAnalyzer
