@@ -28,3 +28,6 @@ Retrieves device information by Device ID or by OData 4 query.
 
 ### [Remove-XdrDeviceTag](Remove-XdrDeviceTag.md)
 Removes one or more tags from one or more devices.
+
+### [Set-XdrDeviceValue](Set-XdrDeviceValue.md)
+Sets the device value of one or more devices.
