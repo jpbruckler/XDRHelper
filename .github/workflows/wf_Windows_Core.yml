@@ -42,7 +42,12 @@ jobs:
       run: Get-Module -ListAvailable Pester, InvokeBuild, PSScriptAnalyzer, platyPS | Sort-Object Name, Version | Format-Table Name, Version, Path -AutoSize
     - name: Test and Build
       shell: pwsh
-      run: Invoke-Build -File .\src\XDRHelper.build.ps1
+      run: |
+        # GitHub's pwsh shell sets $ErrorActionPreference = 'Stop' globally, which turns every
+        # non-terminating error in the module into a terminating one. Reset it to the PowerShell
+        # default so tests run under the same conditions as a local `pwsh -NoProfile` session.
+        $ErrorActionPreference = 'Continue'
+        Invoke-Build -File .\src\XDRHelper.build.ps1
     - name: Upload pester results
       if: ${{ !cancelled() }}
       uses: actions/upload-artifact@v7
