@@ -37,10 +37,14 @@ jobs:
     - name: Bootstrap
       shell: pwsh
       run: ./actions_bootstrap.ps1
+    - name: Show installed build modules
+      shell: pwsh
+      run: Get-Module -ListAvailable Pester, InvokeBuild, PSScriptAnalyzer, platyPS | Sort-Object Name, Version | Format-Table Name, Version, Path -AutoSize
     - name: Test and Build
       shell: pwsh
       run: Invoke-Build -File .\src\XDRHelper.build.ps1
     - name: Upload pester results
+      if: ${{ !cancelled() }}
       uses: actions/upload-artifact@v7
       with:
         name: pester-results
