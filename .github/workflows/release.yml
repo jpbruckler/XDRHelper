@@ -1,0 +1,77 @@
+# Publishes a GitHub release when a version tag is pushed.
+#
+# Versioning happens locally, not here:
+#   cz bump                  # bumps .cz.toml + manifest, updates CHANGELOG.md, commits, tags vX.Y.Z
+#   git push --follow-tags   # pushes the bump commit and the tag, which starts this workflow
+#
+# This workflow only reads the repository: it builds and tests the tagged commit,
+# checks the tag matches the manifest, and creates the release from CHANGELOG.md.
+name: XDRHelper-Release
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write   # needed to create the release and upload the zip
+
+jobs:
+  release:
+    name: Build and publish release
+    runs-on: windows-latest
+    steps:
+    - name: Check out repository
+      uses: actions/checkout@v6
+
+    - name: Check tag matches the module manifest
+      shell: pwsh
+      run: |
+        # The tag is read from the environment, never pasted into the script as a workflow expression,
+        # so a tag name can't inject code into this step.
+        $tag             = $env:GITHUB_REF_NAME
+        $tagVersion      = $tag.TrimStart('v')
+        $manifestVersion = (Import-PowerShellDataFile ./src/XDRHelper/XDRHelper.psd1).ModuleVersion
+        if ($tagVersion -ne $manifestVersion) {
+            throw "Tag $tag does not match ModuleVersion $manifestVersion in the manifest. Was the tag created by 'cz bump'?"
+        }
+        "Tag and manifest agree on version $tagVersion"
+
+    - name: Bootstrap
+      shell: pwsh
+      run: ./actions_bootstrap.ps1
+
+    - name: Test and Build
+      shell: pwsh
+      run: |
+        # See wf_Windows_Core.yml: GitHub's pwsh shell sets this to 'Stop' globally.
+        $ErrorActionPreference = 'Continue'
+        Invoke-Build -File .\src\XDRHelper.build.ps1
+
+    - name: Extract release notes from CHANGELOG.md
+      shell: pwsh
+      run: |
+        # cz bump writes each release as a '## vX.Y.Z (date)' section. Collect the lines
+        # under this tag's heading, stopping at the next '## ' heading.
+        $tag       = $env:GITHUB_REF_NAME
+        $notes     = [System.Collections.Generic.List[string]]::new()
+        $inSection = $false
+        foreach ($line in Get-Content ./CHANGELOG.md) {
+            if ($line -match '^## ') {
+                if ($inSection) { break }
+                $inSection = $line -match "^## $([regex]::Escape($tag)) "
+                continue
+            }
+            if ($inSection) { $notes.Add($line) }
+        }
+        if (-not $inSection) { throw "No '## $tag' section found in CHANGELOG.md" }
+        ($notes -join "`n").Trim() | Set-Content -Path ./release-notes.md -Encoding utf8NoBOM
+        Get-Content ./release-notes.md
+
+    - name: Create GitHub release
+      shell: pwsh
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        $zip = Get-ChildItem ./src/Archive/*.zip | Select-Object -First 1
+        if (-not $zip) { throw 'Build produced no zip in src/Archive' }
+        gh release create $env:GITHUB_REF_NAME $zip.FullName --title $env:GITHUB_REF_NAME --notes-file ./release-notes.md --verify-tag

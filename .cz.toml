@@ -1,10 +1,13 @@
 [tool.commitizen]
 name = "cz_conventional_commits"
 tag_format = "v$version"
+major_version_zero = true
 version_scheme = "semver2"
 version = "0.1.1"
 update_changelog_on_bump = true
 
-pre_bump_hooks = [
-    "pwsh -NoProfile -File ./scripts/Update-ModuleVersion.ps1"
+# Files where `cz bump` replaces the old version with the new one.
+# The part after the colon is a regex: only lines matching it are changed.
+version_files = [
+    "src/XDRHelper/XDRHelper.psd1:^ModuleVersion"
 ]
