@@ -13,8 +13,17 @@ Authenticates to Microsoft Defender XDR using an AppID and App secret.
 
 ## SYNTAX
 
+### Credential
+
 ```powershell
-Connect-XdrByAppId [-AppId] <Guid> [-AppSecret] <SecureString> [-TenantId] <Guid>
+Connect-XdrByAppId -Credential <PSCredential> -TenantId <Guid>
+ [<CommonParameters>]
+```
+
+### AppId
+
+```powershell
+Connect-XdrByAppId -AppId <Guid> -AppSecret <SecureString> -TenantId <Guid>
  [<CommonParameters>]
 ```
 
@@ -39,17 +48,33 @@ Authenticates to Entra and stores the returned JWT token for future use.
 
 ## PARAMETERS
 
+### -Credential
+
+A credential object representing an Entra App registration and client secret.
+
+```yaml
+Type: PSCredential
+Parameter Sets: Credential
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -AppId
 
 The application ID for an Entra App Registration.
 
 ```yaml
 Type: Guid
-Parameter Sets: (All)
+Parameter Sets: AppId
 Aliases:
 
 Required: True
-Position: 1
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -61,11 +86,11 @@ The client secret for an Entra App Registration as a SecureString.
 
 ```yaml
 Type: SecureString
-Parameter Sets: (All)
+Parameter Sets: AppId
 Aliases:
 
 Required: True
-Position: 2
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -81,7 +106,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: True
-Position: 3
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
