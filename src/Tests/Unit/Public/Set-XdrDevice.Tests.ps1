@@ -14,8 +14,8 @@ InModuleScope 'XDRHelper' {
         $IdC = 'ABCDEF0123456789abcdef0123456789ABCDEF01'
     }
 
-    Describe 'Set-XdrDeviceValue Public function tests' -Tag Unit {
-        # Each skipped test below is a question to answer about Set-XdrDeviceValue.
+    Describe 'Set-XdrDevice Public function tests' -Tag Unit {
+        # Each skipped test below is a question to answer about Set-XdrDevice.
         # Replace the name with what should happen, write the body, and remove -Skip.
         # Copy a line for each separate answer; delete the ones that do not apply.
         #
@@ -41,21 +41,26 @@ InModuleScope 'XDRHelper' {
                 @{ DeviceValue = 'low'; Expected = 'Low' },
                 @{ DeviceValue = 'lOW'; Expected = 'Low' }
             ) {
-                Set-XdrDeviceValue -Id $IdA -DeviceValue $DeviceValue
-                $expectedBody = @{
-                    DeviceValue = $Expected
-                } | ConvertTo-Json
+                Set-XdrDevice -Id $IdA -DeviceValue $DeviceValue
 
                 Should-Invoke Invoke-XdrApiRequest -Times 1 -Exactly -ParameterFilter {
-                    ($Body | ConvertTo-Json) -ceq $expectedBody
+                    $Body['deviceValue'] -ceq $Expected
+                }
+            }
+
+            It 'sends tags as an array' {
+                Set-XdrDevice -Id $IdB -Tag Windows11,admin
+
+                Should-Invoke Invoke-XdrApiRequest -Times 1 -Exactly -ParameterFilter {
+                    $Body['machineTags'] -is [array]
                 }
             }
 
             It 'generates the correct path' {
-                Set-XdrDeviceValue -Id $IdB -DeviceValue High
+                Set-XdrDevice -Id $IdB -DeviceValue High
 
                 Should-Invoke Invoke-XdrApiRequest -Times 1 -Exactly -ParameterFilter {
-                    $Path -eq "machines/$IdB/setDeviceValue"
+                    $Path -eq "machines/$IdB"
                 }
 
             }
@@ -72,12 +77,12 @@ InModuleScope 'XDRHelper' {
             }
 
             It 'returns nothing by default' {
-                $result = Set-XdrDeviceValue -Id $IdA -DeviceValue High
+                $result = Set-XdrDevice -Id $IdA -DeviceValue High
                 $result | Should-BeNull
             }
 
             It 'returns the API response with -PassThru' {
-                $result = Set-XdrDeviceValue -Id $IdA -DeviceValue High -PassThru
+                $result = Set-XdrDevice -Id $IdA -DeviceValue High -PassThru
 
                 $result | Should-NotBeNull
                 Should -BeExactly -ActualValue $result.id -ExpectedValue $IdA
@@ -87,7 +92,7 @@ InModuleScope 'XDRHelper' {
         Context 'what input it refuses' {
             It 'rejects malformed Device IDs' {
                 $message = 'Cannot validate argument on parameter ''Id''. The argument "caab196872d62e639a7b7cdf8593601cf632b4" does not match the "^[0-9a-fA-F]{40}$" pattern. Supply an argument that matches "^[0-9a-fA-F]{40}$" and try the command again.'
-                { Set-XdrDeviceValue -Id ($IdA.Substring(0,38)) } | Should-Throw -ExceptionMessage ([System.Management.Automation.WildcardPattern]::Escape($message))
+                { Set-XdrDevice -Id ($IdA.Substring(0,38)) } | Should-Throw -ExceptionMessage ([System.Management.Automation.WildcardPattern]::Escape($message))
             }
         }
 

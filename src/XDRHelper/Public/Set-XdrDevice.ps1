@@ -102,7 +102,9 @@ function Set-XdrDevice {
             try {
                 $result = Invoke-XdrApiRequest -Method PATCH -Path $path -Body $body
 
-                if ($PassThru) { $result }
+                if ($PassThru) {
+                    $result
+                }
             }
             catch {
                 # Continue on 404 (no such device), throw on anything else.
