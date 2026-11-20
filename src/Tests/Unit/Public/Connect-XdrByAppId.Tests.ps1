@@ -38,7 +38,23 @@ InModuleScope 'XDRHelper' {
                 }
             }
 
-            It 'Requests a token using client credentials' {
+            It 'Requests a token using a credential object' {
+                $Credential = [pscredential]::new($AppId, $AppSecret)
+                Connect-XdrByAppId -Credential $Credential -TenantId $TenantId
+
+                Should -Invoke Invoke-RestMethod `
+                    -Times 1 `
+                    -Exactly `
+                    -ParameterFilter {
+                    $Method -eq 'Post' -and
+                    $Uri -eq "https://login.microsoftonline.com/$TenantId/oauth2/token" -and
+                    $Body.client_id -eq $AppId -and
+                    $Body.grant_type -eq 'client_credentials' -and
+                    $Body.resource -eq 'https://api.securitycenter.microsoft.com'
+                }
+            }
+
+            It 'Requests a token using App ID and App secret' {
                 Connect-XdrByAppId -AppId $AppId -AppSecret $AppSecret -TenantId $TenantId
 
                 Should -Invoke Invoke-RestMethod `

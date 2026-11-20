@@ -6,6 +6,8 @@ function Connect-XdrByAppId {
         Performs an OAuth client credential flow with the provided app registration ID and secret.
         Authentication token is cached locally for use with subsequent calls to this module's
         functions.
+    .PARAMETER Credential
+        A credential object representing an Entra App registration and client secret.
     .PARAMETER AppId
         The application ID for an Entra App Registration.
     .PARAMETER AppSecret
@@ -22,16 +24,23 @@ function Connect-XdrByAppId {
     #>
     [CmdletBinding()]
     param(
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory, ParameterSetName = 'Credential')]
+        [pscredential] $Credential,
+
+        [Parameter(Mandatory, ParameterSetName = 'AppId')]
         [guid] $AppId,
 
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory, ParameterSetName = 'AppId')]
         [securestring]$AppSecret,
 
         [Parameter(Mandatory)]
         [guid] $TenantId
     )
 
+    if ($PSCmdlet.ParameterSetName -eq 'Credential') {
+        $AppId = $Credential.UserName
+        $AppSecret = $Credential.Password
+    }
     $sourceAppIdUri = 'https://api.securitycenter.microsoft.com'
     $OAuthURI = "https://login.microsoftonline.com/$TenantId/oauth2/token"
 
